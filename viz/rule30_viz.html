@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0e0e0e; color: #ccc; font-family: "Courier New", monospace; padding: 24px; }
+  h2 { color: #fff; font-size: 16px; letter-spacing: 3px; margin-bottom: 4px; }
+  .sub { color: #444; font-size: 11px; margin-bottom: 12px; }
+  .def { color: #444; font-size: 11px; margin-bottom: 20px; border-left: 2px solid #222; padding-left: 12px; line-height: 2; }
+  .summary { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { background: #151515; border: 1px solid #222; padding: 8px 16px; }
+  .stat-val { font-size: 22px; color: #fff; }
+  .stat-lbl { font-size: 10px; color: #444; margin-top: 2px; }
+  .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .controls label { color: #555; font-size: 11px; }
+  input { background: #1a1a1a; border: 1px solid #333; color: #aaa; padding: 4px 8px; font-family: monospace; font-size: 12px; width: 80px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  thead th { color: #444; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+              padding: 5px 10px; text-align: right; border-bottom: 1px solid #222; }
+  thead th.left { text-align: left; }
+  td { padding: 4px 10px; text-align: right; border-bottom: 1px solid #181818; vertical-align: middle; }
+  td.left { text-align: left; }
+  tr:hover td { background: #161616; }
+  .sys { color: #aaa; }
+  .out { color: #ffb74d; font-weight: bold; }
+  .bracket { color: #555; }
+  .bar-wrap { display: flex; align-items: flex-end; gap: 1px; height: 32px; }
+  .bar { width: 5px; min-height: 1px; background: #1a4a2a; flex-shrink: 0; }
+  .bar.has-out { background: #7a3a10; }
+  #filterGen { width: 60px; }
+</style>
+</head>
+<body>
+<h2>RULE 30 — Path Number Analysis  <span style="color:#333;font-size:12px;letter-spacing:1px">(structural Rule 60)</span></h2>
+<p class="sub">Start condition: 00100 · Root = 7 · gen 0–127 · system primes {2,3,5,7} · primes beyond boundary in <span style="color:#ffb74d">orange</span></p>
+<div class="def">
+  Path number = sum of all triplet decimal values in one generation<br>
+  Every path number is divisible by 7 (consequence of initial condition 00100)<br>
+  Prime factors within {2,3,5,7}: white · Prime factors outside system boundary: <span style="color:#ffb74d">orange</span>
+</div>
+
+<div class="summary" id="summary"></div>
+
+<div class="controls">
+  <label>Jump to gen: <input type="number" id="filterGen" min="0" max="127" placeholder="0–127"></label>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:right">Gen</th>
+      <th style="text-align:right">Path number</th>
+      <th class="left">System factors {2,3,5,7}</th>
+      <th class="left">Beyond boundary [!p]</th>
+      <th class="left" style="min-width:160px">Trend</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<script>
+const DATA = [{"gen": 0, "pn": 7, "inside": "7", "outside": ""}, {"gen": 1, "pn": 21, "inside": "3 \u00d7 7", "outside": ""}, {"gen": 2, "pn": 21, "inside": "3 \u00d7 7", "outside": ""}, {"gen": 3, "pn": 42, "inside": "2 \u00d7 3 \u00d7 7", "outside": ""}, {"gen": 4, "pn": 28, "inside": "2^2 \u00d7 7", "outside": ""}, {"gen": 5, "pn": 63, "inside": "3^2 \u00d7 7", "outside": ""}, {"gen": 6, "pn": 35, "inside": "5 \u00d7 7", "outside": ""}, {"gen": 7, "pn": 84, "inside": "2^2 \u00d7 3 \u00d7 7", "outside": ""}, {"gen": 8, "pn": 49, "inside": "7^2", "outside": ""}, {"gen": 9, "pn": 84, "inside": "2^2 \u00d7 3 \u00d7 7", "outside": ""}, {"gen": 10, "pn": 77, "inside": "7", "outside": "11"}, {"gen": 11, "pn": 98, "inside": "2 \u00d7 7^2", "outside": ""}, {"gen": 12, "pn": 84, "inside": "2^2 \u00d7 3 \u00d7 7", "outside": ""}, {"gen": 13, "pn": 133, "inside": "7", "outside": "19"}, {"gen": 14, "pn": 91, "inside": "7", "outside": "13"}, {"gen": 15, "pn": 154, "inside": "2 \u00d7 7", "outside": "11"}, {"gen": 16, "pn": 105, "inside": "3 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 17, "pn": 133, "inside": "7", "outside": "19"}, {"gen": 18, "pn": 140, "inside": "2^2 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 19, "pn": 168, "inside": "2^3 \u00d7 3 \u00d7 7", "outside": ""}, {"gen": 20, "pn": 147, "inside": "3 \u00d7 7^2", "outside": ""}, {"gen": 21, "pn": 161, "inside": "7", "outside": "23"}, {"gen": 22, "pn": 161, "inside": "7", "outside": "23"}, {"gen": 23, "pn": 196, "inside": "2^2 \u00d7 7^2", "outside": ""}, {"gen": 24, "pn": 182, "inside": "2 \u00d7 7", "outside": "13"}, {"gen": 25, "pn": 189, "inside": "3^3 \u00d7 7", "outside": ""}, {"gen": 26, "pn": 182, "inside": "2 \u00d7 7", "outside": "13"}, {"gen": 27, "pn": 231, "inside": "3 \u00d7 7", "outside": "11"}, {"gen": 28, "pn": 210, "inside": "2 \u00d7 3 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 29, "pn": 238, "inside": "2 \u00d7 7", "outside": "17"}, {"gen": 30, "pn": 217, "inside": "7", "outside": "31"}, {"gen": 31, "pn": 273, "inside": "3 \u00d7 7", "outside": "13"}, {"gen": 32, "pn": 182, "inside": "2 \u00d7 7", "outside": "13"}, {"gen": 33, "pn": 273, "inside": "3 \u00d7 7", "outside": "13"}, {"gen": 34, "pn": 203, "inside": "7", "outside": "29"}, {"gen": 35, "pn": 322, "inside": "2 \u00d7 7", "outside": "23"}, {"gen": 36, "pn": 224, "inside": "2^5 \u00d7 7", "outside": ""}, {"gen": 37, "pn": 308, "inside": "2^2 \u00d7 7", "outside": "11"}, {"gen": 38, "pn": 266, "inside": "2 \u00d7 7", "outside": "19"}, {"gen": 39, "pn": 315, "inside": "3^2 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 40, "pn": 329, "inside": "7", "outside": "47"}, {"gen": 41, "pn": 287, "inside": "7", "outside": "41"}, {"gen": 42, "pn": 315, "inside": "3^2 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 43, "pn": 343, "inside": "7^3", "outside": ""}, {"gen": 44, "pn": 266, "inside": "2 \u00d7 7", "outside": "19"}, {"gen": 45, "pn": 385, "inside": "5 \u00d7 7", "outside": "11"}, {"gen": 46, "pn": 294, "inside": "2 \u00d7 3 \u00d7 7^2", "outside": ""}, {"gen": 47, "pn": 357, "inside": "3 \u00d7 7", "outside": "17"}, {"gen": 48, "pn": 308, "inside": "2^2 \u00d7 7", "outside": "11"}, {"gen": 49, "pn": 371, "inside": "7", "outside": "53"}, {"gen": 50, "pn": 301, "inside": "7", "outside": "43"}, {"gen": 51, "pn": 413, "inside": "7", "outside": "59"}, {"gen": 52, "pn": 364, "inside": "2^2 \u00d7 7", "outside": "13"}, {"gen": 53, "pn": 420, "inside": "2^2 \u00d7 3 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 54, "pn": 343, "inside": "7^3", "outside": ""}, {"gen": 55, "pn": 455, "inside": "5 \u00d7 7", "outside": "13"}, {"gen": 56, "pn": 399, "inside": "3 \u00d7 7", "outside": "19"}, {"gen": 57, "pn": 420, "inside": "2^2 \u00d7 3 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 58, "pn": 392, "inside": "2^3 \u00d7 7^2", "outside": ""}, {"gen": 59, "pn": 483, "inside": "3 \u00d7 7", "outside": "23"}, {"gen": 60, "pn": 427, "inside": "7", "outside": "61"}, {"gen": 61, "pn": 490, "inside": "2 \u00d7 5 \u00d7 7^2", "outside": ""}, {"gen": 62, "pn": 413, "inside": "7", "outside": "59"}, {"gen": 63, "pn": 546, "inside": "2 \u00d7 3 \u00d7 7", "outside": "13"}, {"gen": 64, "pn": 448, "inside": "2^6 \u00d7 7", "outside": ""}, {"gen": 65, "pn": 392, "inside": "2^3 \u00d7 7^2", "outside": ""}, {"gen": 66, "pn": 455, "inside": "5 \u00d7 7", "outside": "13"}, {"gen": 67, "pn": 483, "inside": "3 \u00d7 7", "outside": "23"}, {"gen": 68, "pn": 483, "inside": "3 \u00d7 7", "outside": "23"}, {"gen": 69, "pn": 469, "inside": "7", "outside": "67"}, {"gen": 70, "pn": 539, "inside": "7^2", "outside": "11"}, {"gen": 71, "pn": 546, "inside": "2 \u00d7 3 \u00d7 7", "outside": "13"}, {"gen": 72, "pn": 511, "inside": "7", "outside": "73"}, {"gen": 73, "pn": 476, "inside": "2^2 \u00d7 7", "outside": "17"}, {"gen": 74, "pn": 581, "inside": "7", "outside": "83"}, {"gen": 75, "pn": 546, "inside": "2 \u00d7 3 \u00d7 7", "outside": "13"}, {"gen": 76, "pn": 546, "inside": "2 \u00d7 3 \u00d7 7", "outside": "13"}, {"gen": 77, "pn": 609, "inside": "3 \u00d7 7", "outside": "29"}, {"gen": 78, "pn": 560, "inside": "2^4 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 79, "pn": 602, "inside": "2 \u00d7 7", "outside": "43"}, {"gen": 80, "pn": 616, "inside": "2^3 \u00d7 7", "outside": "11"}, {"gen": 81, "pn": 553, "inside": "7", "outside": "79"}, {"gen": 82, "pn": 567, "inside": "3^4 \u00d7 7", "outside": ""}, {"gen": 83, "pn": 658, "inside": "2 \u00d7 7", "outside": "47"}, {"gen": 84, "pn": 567, "inside": "3^4 \u00d7 7", "outside": ""}, {"gen": 85, "pn": 707, "inside": "7", "outside": "101"}, {"gen": 86, "pn": 546, "inside": "2 \u00d7 3 \u00d7 7", "outside": "13"}, {"gen": 87, "pn": 616, "inside": "2^3 \u00d7 7", "outside": "11"}, {"gen": 88, "pn": 637, "inside": "7^2", "outside": "13"}, {"gen": 89, "pn": 602, "inside": "2 \u00d7 7", "outside": "43"}, {"gen": 90, "pn": 602, "inside": "2 \u00d7 7", "outside": "43"}, {"gen": 91, "pn": 791, "inside": "7", "outside": "113"}, {"gen": 92, "pn": 553, "inside": "7", "outside": "79"}, {"gen": 93, "pn": 707, "inside": "7", "outside": "101"}, {"gen": 94, "pn": 630, "inside": "2 \u00d7 3^2 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 95, "pn": 756, "inside": "2^2 \u00d7 3^3 \u00d7 7", "outside": ""}, {"gen": 96, "pn": 658, "inside": "2 \u00d7 7", "outside": "47"}, {"gen": 97, "pn": 679, "inside": "7", "outside": "97"}, {"gen": 98, "pn": 693, "inside": "3^2 \u00d7 7", "outside": "11"}, {"gen": 99, "pn": 770, "inside": "2 \u00d7 5 \u00d7 7", "outside": "11"}, {"gen": 100, "pn": 721, "inside": "7", "outside": "103"}, {"gen": 101, "pn": 728, "inside": "2^3 \u00d7 7", "outside": "13"}, {"gen": 102, "pn": 721, "inside": "7", "outside": "103"}, {"gen": 103, "pn": 833, "inside": "7^2", "outside": "17"}, {"gen": 104, "pn": 665, "inside": "5 \u00d7 7", "outside": "19"}, {"gen": 105, "pn": 637, "inside": "7^2", "outside": "13"}, {"gen": 106, "pn": 714, "inside": "2 \u00d7 3 \u00d7 7", "outside": "17"}, {"gen": 107, "pn": 770, "inside": "2 \u00d7 5 \u00d7 7", "outside": "11"}, {"gen": 108, "pn": 777, "inside": "3 \u00d7 7", "outside": "37"}, {"gen": 109, "pn": 798, "inside": "2 \u00d7 3 \u00d7 7", "outside": "19"}, {"gen": 110, "pn": 777, "inside": "3 \u00d7 7", "outside": "37"}, {"gen": 111, "pn": 847, "inside": "7", "outside": "11^2"}, {"gen": 112, "pn": 805, "inside": "5 \u00d7 7", "outside": "23"}, {"gen": 113, "pn": 763, "inside": "7", "outside": "109"}, {"gen": 114, "pn": 840, "inside": "2^3 \u00d7 3 \u00d7 5 \u00d7 7", "outside": ""}, {"gen": 115, "pn": 931, "inside": "7^2", "outside": "19"}, {"gen": 116, "pn": 791, "inside": "7", "outside": "113"}, {"gen": 117, "pn": 847, "inside": "7", "outside": "11^2"}, {"gen": 118, "pn": 861, "inside": "3 \u00d7 7", "outside": "41"}, {"gen": 119, "pn": 882, "inside": "2 \u00d7 3^2 \u00d7 7^2", "outside": ""}, {"gen": 120, "pn": 854, "inside": "2 \u00d7 7", "outside": "61"}, {"gen": 121, "pn": 826, "inside": "2 \u00d7 7", "outside": "59"}, {"gen": 122, "pn": 861, "inside": "3 \u00d7 7", "outside": "41"}, {"gen": 123, "pn": 959, "inside": "7", "outside": "137"}, {"gen": 124, "pn": 854, "inside": "2 \u00d7 7", "outside": "61"}, {"gen": 125, "pn": 875, "inside": "5^3 \u00d7 7", "outside": ""}, {"gen": 126, "pn": 903, "inside": "3 \u00d7 7", "outside": "43"}, {"gen": 127, "pn": 924, "inside": "2^2 \u00d7 3 \u00d7 7", "outside": "11"}];
+const maxPN = Math.max(...DATA.map(d => d.pn));
+const outCount = DATA.filter(d => d.outside !== "").length;
+const tbody = document.getElementById("tbody");
+
+DATA.forEach(d => {
+  const hasOut = d.outside !== "";
+  const h = Math.max(2, Math.round((d.pn / maxPN) * 30));
+  const bar = `<div class="bar ${hasOut ? "has-out" : ""}" style="height:${h}px" title="Gen ${d.gen}: ${d.pn}"></div>`;
+  const tr = document.createElement("tr");
+  tr.id = "gen" + d.gen;
+  tr.innerHTML =
+    `<td>${d.gen}</td>` +
+    `<td style="color:#fff">${d.pn}</td>` +
+    `<td class="left"><span class="sys">${d.inside}</span></td>` +
+    `<td class="left">${hasOut ? `<span class="out">[! ${d.outside} ]</span>` : `<span style="color:#222">–</span>`}</td>` +
+    `<td class="left"><div class="bar-wrap">${bar}</div></td>`;
+  tbody.appendChild(tr);
+});
+
+document.getElementById("summary").innerHTML =
+  `<div class="stat"><div class="stat-val">128</div><div class="stat-lbl">generations</div></div>` +
+  `<div class="stat"><div class="stat-val">7</div><div class="stat-lbl">root · always divides</div></div>` +
+  `<div class="stat"><div class="stat-val">${maxPN}</div><div class="stat-lbl">max path number</div></div>` +
+  `<div class="stat"><div class="stat-val" style="color:#ffb74d">${outCount}</div><div class="stat-lbl">gens with prime > 7</div></div>`;
+
+document.getElementById("filterGen").addEventListener("change", function() {
+  const g = parseInt(this.value);
+  if (!isNaN(g) && g >= 0 && g <= 127) {
+    const el = document.getElementById("gen" + g);
+    if (el) el.scrollIntoView({behavior: "smooth", block: "center"});
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0e0e0e; color: #ccc; font-family: "Courier New", monospace; padding: 24px; }
+  h2 { color: #fff; font-size: 16px; letter-spacing: 3px; margin-bottom: 4px; }
+  .sub { color: #444; font-size: 11px; margin-bottom: 12px; }
+  .def { color: #444; font-size: 11px; margin-bottom: 20px; border-left: 2px solid #222; padding-left: 12px; line-height: 2; }
+  .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .controls label { color: #555; font-size: 11px; }
+  select, input { background: #1a1a1a; border: 1px solid #333; color: #aaa; padding: 4px 8px; font-family: monospace; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  thead th { color: #444; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+             padding: 5px 10px; text-align: right; border-bottom: 1px solid #222;
+             cursor: pointer; user-select: none; }
+  thead th:hover { color: #888; }
+  thead th.left { text-align: left; }
+  td { padding: 4px 10px; text-align: right; border-bottom: 1px solid #181818; }
+  td.left { text-align: left; }
+  tr:hover td { background: #161616; }
+  .prime { color: #ffb74d; }
+  .sparkline { display: flex; gap: 2px; align-items: flex-end; height: 20px; }
+  .spark-bar { width: 6px; flex-shrink: 0; }
+  .summary { display: flex; gap: 16px; margin-bottom: 20px; }
+  .stat { background: #151515; border: 1px solid #222; padding: 8px 16px; }
+  .stat-val { font-size: 22px; color: #fff; }
+  .stat-lbl { font-size: 10px; color: #444; margin-top: 2px; }
+  #count { color: #444; font-size: 11px; margin-left: auto; }
+  .r30 { color: #555; font-size: 10px; }
+</style>
+</head>
+<body>
+<h2>32 CELLULAR AUTOMATA — Path Number Analysis</h2>
+<p class="sub">Start condition: 00100 · Root = 7 · Path number = sum of all triplet values · gen 0–19</p>
+<div class="def">
+  Start condition fixed: <span style="color:#fff">0 0 1 0 0</span> for all 32 rules<br>
+  32 valid rules: 4, 12, 20, 28 … 252 (step size 8)<br>
+  Wolfram's Rule 30 = structural <span style="color:#fff">n = 60</span> · All path numbers are multiples of root 7
+</div>
+
+<div class="summary" id="summary"></div>
+
+<div class="controls">
+  <div><label>Search n: </label>
+    <input type="text" id="filterN" placeholder="e.g. 60">
+  </div>
+  <div id="count"></div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th class="left" data-col="n">n (Rule)</th>
+      <th data-col="wurzel">Root</th>
+      <th class="left">Prime factors of n</th>
+      <th class="left">Path numbers gen 0–19</th>
+      <th data-col="maxweg">Max</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<script>
+const DATA = [{"n": 4, "wurzel": 7, "factors": [2], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 12, "wurzel": 7, "factors": [2, 3], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 20, "wurzel": 7, "factors": [2, 5], "wegs": [7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14]}, {"n": 28, "wurzel": 7, "factors": [2, 7], "wegs": [7, 14, 14, 21, 21, 28, 28, 35, 35, 42, 42, 49, 49, 56, 56, 63, 63, 70, 70, 77]}, {"n": 36, "wurzel": 7, "factors": [2, 3], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 44, "wurzel": 7, "factors": [2, 11], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 52, "wurzel": 7, "factors": [2, 13], "wegs": [7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14]}, {"n": 60, "wurzel": 7, "factors": [2, 3, 5], "wegs": [7, 14, 14, 28, 14, 28, 28, 56, 14, 28, 28, 56, 28, 56, 56, 112, 14, 28, 28, 56]}, {"n": 68, "wurzel": 7, "factors": [2, 17], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 76, "wurzel": 7, "factors": [2, 19], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 84, "wurzel": 7, "factors": [2, 3, 7], "wegs": [7, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]}, {"n": 92, "wurzel": 7, "factors": [2, 23], "wegs": [7, 14, 21, 21, 28, 28, 35, 35, 42, 42, 49, 49, 56, 56, 63, 63, 70, 70, 77, 77]}, {"n": 100, "wurzel": 7, "factors": [2, 5], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 108, "wurzel": 7, "factors": [2, 3], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 116, "wurzel": 7, "factors": [2, 29], "wegs": [7, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]}, {"n": 124, "wurzel": 7, "factors": [2, 31], "wegs": [7, 14, 21, 21, 35, 21, 35, 42, 56, 35, 42, 56, 56, 56, 77, 77, 91, 63, 77, 77]}, {"n": 132, "wurzel": 7, "factors": [2, 3, 11], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 140, "wurzel": 7, "factors": [2, 5, 7], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 148, "wurzel": 7, "factors": [2, 37], "wegs": [7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14]}, {"n": 156, "wurzel": 7, "factors": [2, 3, 13], "wegs": [7, 14, 14, 21, 21, 28, 28, 35, 35, 42, 42, 49, 49, 56, 56, 63, 63, 70, 70, 77]}, {"n": 164, "wurzel": 7, "factors": [2, 41], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 172, "wurzel": 7, "factors": [2, 43], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 180, "wurzel": 7, "factors": [2, 3, 5], "wegs": [7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14, 7, 14]}, {"n": 188, "wurzel": 7, "factors": [2, 47], "wegs": [7, 14, 14, 28, 28, 35, 35, 49, 49, 56, 56, 70, 70, 77, 77, 91, 91, 98, 98, 112]}, {"n": 196, "wurzel": 7, "factors": [2, 7], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 204, "wurzel": 7, "factors": [2, 3, 17], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 212, "wurzel": 7, "factors": [2, 53], "wegs": [7, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]}, {"n": 220, "wurzel": 7, "factors": [2, 5, 11], "wegs": [7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98, 105, 112, 119, 126, 133, 140]}, {"n": 228, "wurzel": 7, "factors": [2, 3, 19], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 236, "wurzel": 7, "factors": [2, 59], "wegs": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]}, {"n": 244, "wurzel": 7, "factors": [2, 61], "wegs": [7, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]}, {"n": 252, "wurzel": 7, "factors": [2, 3, 7], "wegs": [7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98, 105, 112, 119, 126, 133, 140]}];
+
+let sortCol = "n", sortAsc = true;
+const maxWeg = Math.max(...DATA.flatMap(r => r.wegs));
+
+function render() {
+  const fn = document.getElementById("filterN").value.trim();
+  let rows = DATA.filter(r => fn === "" || r.n === parseInt(fn));
+  rows.sort((a, b) => {
+    let av = sortCol === "maxweg" ? Math.max(...a.wegs) : a[sortCol];
+    let bv = sortCol === "maxweg" ? Math.max(...b.wegs) : b[sortCol];
+    return sortAsc ? av - bv : bv - av;
+  });
+  document.getElementById("count").textContent = rows.length + " rules";
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  rows.forEach(r => {
+    const fhtml = r.factors.length === 0
+      ? '<span style="color:#333">–</span>'
+      : r.factors.map(f => '<span class="prime">' + f + '</span>').join(" × ");
+    const bars = r.wegs.map((w, gi) => {
+      const h = Math.max(1, Math.round((w / maxWeg) * 18));
+      return '<div class="spark-bar" style="height:' + h + 'px;background:#1a4a2a" title="Gen ' + gi + ': ' + w + '"></div>';
+    }).join("");
+    const note = r.n === 60 ? ' <span class="r30">(Wolfram Rule 30)</span>' : '';
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="left" style="color:#fff">' + r.n + note + '</td>' +
+      '<td>' + r.wurzel + '</td>' +
+      '<td class="left">' + fhtml + '</td>' +
+      '<td class="left"><div class="sparkline">' + bars + '</div></td>' +
+      '<td>' + Math.max(...r.wegs) + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+const wegMax = Math.max(...DATA.map(r => Math.max(...r.wegs)));
+document.getElementById("summary").innerHTML =
+  '<div class="stat"><div class="stat-val">32</div><div class="stat-lbl">valid rules</div></div>' +
+  '<div class="stat"><div class="stat-val">7</div><div class="stat-lbl">root (gen 0)</div></div>' +
+  '<div class="stat"><div class="stat-val">' + wegMax + '</div><div class="stat-lbl">max path number</div></div>';
+
+document.querySelectorAll("thead th[data-col]").forEach(th => {
+  th.addEventListener("click", () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortAsc = !sortAsc;
+    else { sortCol = col; sortAsc = true; }
+    render();
+  });
+});
+document.getElementById("filterN").addEventListener("input", render);
+render();
+</script>
+</body>
+</html>

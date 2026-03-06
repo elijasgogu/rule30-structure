@@ -1,0 +1,10 @@
+# External dependencies — required by:
+#   analysis/primes/rule30_primes.py          (missing primes detection)
+#   analysis/2d/gol_rpentomino_primes.py      (performance, missing primes detection)
+#
+# All other scripts use only the Python standard library.
+#
+# Install: pip install -r requirements.txt
+
+numpy>=1.24
+sympy>=1.12
