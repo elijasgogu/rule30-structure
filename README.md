@@ -21,8 +21,15 @@ rule30-structure/
 │   │   ├── rule30_analysis.py                       # path numbers for Rule 30, gen 0–127
 │   │   │                                            # prime factors: system {2,3,5,7} and
 │   │   │                                            # beyond boundary [!p]
-│   │   └── rule30_primes.py                         # systematic collection of all primes > 7
-│   │                                                # over configurable generation window
+│   │   └── rule30_primes.py                         # collects all prime factors > 7 that appear in the factorization
+│   │                                                # of Rule 30 path numbers over a configurable generation window
+│   │
+│   ├── residue/ 
+│   │     └── rule30_residue_classification.py       # full residue analysis after removing 
+│   │                                                # system primes {2,3,5,7}; classifies 
+│   │                                                # residues as resolved_to_1, prime, 
+│   │                                                # prime_power, or mixed_composite 
+│   │                                                # over a configurable generation window 
 │   │
 │   ├── interior/
 │   │   ├── rule30_interior.py                       # raw interior triplet sequence, gen 0+
@@ -235,57 +242,75 @@ Beyond boundary (sorted):
 937, 947, 953, 967, 983, 997, 1021, 1031
 ```
 
-Two structural properties hold consistently across all 1024 generations:
 
-1. Every prime factor beyond the system boundary appears **exclusively together**
-   with at least one factor from {2, 3, 5, 7}. No path number consists solely of
-   a prime outside the system. The 7 is always present as anchor.
+Two structural properties hold consistently across the analysed window:
 
-2. Every factor beyond the boundary is itself **prime** — no composite numbers
-   appear outside the system boundary.
+1. Every prime factor beyond the system boundary appears **together with**
+   factors from {2, 3, 5, 7}. In particular, the factor 7 is always present as
+   an anchor because it is generated directly by the initial condition `00100`
+   (the triplet values 1 + 2 + 4 = 7).
 
-The script `analysis/primes/rule30_analysis.py` shows these properties generation by
-generation, marking every prime outside the system boundary with `[!p]`.
-The script `analysis/primes/rule30_primes.py` collects all such primes over a
-configurable number of generations and reports unique factors, order of first
-appearance, and which primes below the largest found are not yet observed.
+2. All factors recorded outside the boundary are **prime factors of the path
+   numbers themselves**, obtained from the full prime factorization of each
+   value.
 
-#### Rule 30 as a Prime Generator
+The script `analysis/primes/rule30_analysis.py` shows these factors generation
+by generation, marking every prime outside the system boundary with `[!p]`.
+The script `analysis/primes/rule30_primes.py` collects all such prime factors
+over a configurable number of generations and reports unique factors, order of
+first appearance, and which primes below the largest observed value have not
+yet appeared.
 
-The two properties above together suggest an interpretation that goes beyond
-the immediate arithmetic observation: Rule 30 operates as a **prime generator**
-— one that produces primes not through a sieve, not through an arithmetic
-formula, and not through any of the classical methods of prime generation, but
-as a direct consequence of a geometric recursion.
+To complement this factor analysis, the script
+`analysis/residue/rule30_residue_classification.py` examines the **entire
+reduced residue** obtained after removing all factors from {2, 3, 5, 7} from
+each path number. The resulting residues are classified into four categories:
 
-The mechanism is the collision structure of the automaton. When independently
-propagating active regions meet, they produce triplet values from the set
-{3, 5, 6, 7} — the only source of genuinely new configurations in the interior.
-It is these collisions that ultimately determine the prime factors of each path
-number. The primes do not appear by design but as emergent arithmetic products
-of a local spatial process.
+- `resolved_to_1`
+- `prime`
+- `prime_power`
+- `mixed_composite`
+
+For the first 1024 generations the distribution is:
+```
+resolved_to_1: 141
+prime: 753
+prime_power: 15
+mixed_composite: 115
+```
+
+Thus the reduced residues are **dominated by arithmetically simple values**,
+with primes forming the large majority, but composite residues clearly present.
+
+
+#### Arithmetic Bias in the Residue Sequence
+
+The combined analysis suggests that the arithmetic structure of the path number
+sequence is **not arbitrary**. After removing the system factors {2, 3, 5, 7},
+the remaining residues are strongly biased toward simple forms — most often a
+single prime, occasionally a prime power, and only comparatively rarely a
+mixed composite number.
+
+This bias appears to arise from the geometric dynamics of the automaton. The
+interior evolution of Rule 30 consists of independently propagating regions
+that interact through collisions producing the triplet values {3, 5, 6, 7}.
+These collisions introduce the arithmetic variability that ultimately
+determines the factor structure of each path number.
 
 The extraction method is correspondingly simple: since every path number is
-divisible by 7 (a consequence of the initial condition `00100`), dividing by the
-system factors {2, 3, 5, 7} isolates any prime beyond the boundary directly.
-No primality test is required — the factorization emerges from the recursion
-itself.
+divisible by 7 (a direct consequence of the initial condition `00100`),
+removing the system factors {2, 3, 5, 7} isolates the arithmetic contribution
+generated by the recursion itself.
 
-Within the first 1024 generations, 139 distinct primes beyond 7 are observed,
-the largest being 1031. Thirty primes between 7 and 1031 do not appear within
-this window — they are absent, not excluded. Since the analysis can be resumed
-from any generation without recomputing earlier states, the window can be
-extended to arbitrarily high generations in short computation time, making it
-plausible that the full sequence of primes is eventually covered.
+The observations reported here are **empirical rather than theoretical**. What
+remains open is how the interior structure documented in
+`docs/interior_classes.md` — the layer hierarchy, the four combinative classes,
+and the R-coupling — constrains the arithmetic form of the resulting path
+numbers, and whether the observed bias toward simple residues persists over
+much longer generation windows. The connection between the collision geometry
+of the automaton and the arithmetic structure of its path number sequence
+remains the central open question raised by this analysis.
 
-This interpretation is an **empirical observation, not a proven theorem**. What
-remains open is whether every prime greater than 7 eventually appears, whether
-the gaps in the observed sequence close with more generations, and whether the
-interior structure documented in `docs/interior_classes.md` — the layer
-hierarchy, the four combinative classes, and the R-coupling — provides a
-structural explanation for which primes appear at which generations. The
-connection between the collision geometry of the automaton and its arithmetic
-output is the most productive open question raised by this analysis.
 
 ### The Zero Space as Ground State
 
