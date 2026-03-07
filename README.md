@@ -1,7 +1,7 @@
 # Rule 30: Path Numbers and Interior Structure
 ## A structural analysis of elementary cellular automata
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18893850.svg)](https://doi.org/10.5281/zenodo.18893850)
+[![DOI](https://zenodo.org/badge/1174656288.svg)](https://doi.org/10.5281/zenodo.18893849)
 
 ## Project Structure
 
