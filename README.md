@@ -45,20 +45,9 @@ rule30-structure/
 │   │   ├── rule30_class_c_layers.py                 # full layer table: gen 4, 8, 12, 16, …
 │   │   └── rule30_class_d_layers.py                 # full layer table: gen 5, 9, 13, 17, …
 │   │
-│   ├── open_problems/
-│   │   └── rule30_center_triplet.py                 # center bit vs center triplet analysis
-│   │                                                # frequency distribution, periodicity check
-│   │
-│   └── 2d/
-│       ├── gol_path_numbers.py                      # path number analysis for Game of Life
-│       │                                            # Blinker, Glider, R-pentomino, 30 gen
-│       │                                            # establishes 511 = 7 × 73 as structural root
-│       ├── gol_rpentomino_primes.py                 # systematic prime analysis, R-pentomino
-│       │                                            # documents stabilization at gen 1103
-│       │                                            # k = 116 = 2² × 29 as terminal value
-│       └── gol_rule_space.py                        # complete scan of all 2^16 outer totalistic
-│                                                    # 2D rules; identifies 883 non-trivially
-│                                                    # bounded rules; reduction factor ≈ 74×
+│   └── open_problems/
+│       └── rule30_center_triplet.py                 # center bit vs center triplet analysis
+│                                                    # frequency distribution, periodicity check
 │
 ├── diagrams/
 │   ├── wegzahl_recursion_visualization.drawio       # derivation of the path number recursion
@@ -148,40 +137,6 @@ all 32 structurally independent automata and outputs their path number sequences
 and prime factorizations over 20 generations, making the variation across the
 full rule space directly comparable.
 
----
-
-## Beyond One Dimension
-
-The structural reduction from 256 to 32 rules follows from a geometric
-necessity that is not specific to one dimension. In Conway's Game of Life, the
-neighbourhood consists of 9 bits — yielding 2⁹ = 512 possible neighbourhood
-states. A structurally complete 2D rule would need to satisfy the zero-space
-boundary condition in all eight directions simultaneously. If the same principle
-applies, Game of Life's rule (23/3) could occupy a structurally distinguished
-position in the reduced 2D rule space — analogous to Rule 60 among the 32
-one-dimensional rules. Its computational universality would then not be a
-coincidence of empirical discovery but a structural consequence.
-
-The path number method extends naturally to two dimensions: instead of triplet
-decimal values, one would measure 9-bit neighbourhood values as decimal numbers
-and sum them across a generation. The system boundary shifts from 7 to
-2⁹ − 1 = 511 = 7 × 73. A first empirical application to Game of Life confirms
-that every path number is divisible by 511 without exception — the same
-structural invariance as in 1D, now with a composite root. The prime
-factorization of the multiplier k (where path number = 511 × k) varies with
-the collision geometry of each generation and may provide an arithmetic
-signature of the observed complexity — a basis for classifying behaviour that
-appears chaotic by the structure of the primes it produces rather than by its
-visual appearance alone. Extended analysis of the R-pentomino shows that this
-k-sequence converges to a fixed value at generation 1103 (k = 116 = 2² × 29,
-116 active cells) and remains constant thereafter — every stable pattern has
-a terminal arithmetic fingerprint readable directly from its path number.
-
-Whether analogous structures emerge at larger scales — invariant boundaries,
-combinative classes, prime generation beyond the system boundary — remains an
-open empirical question.
-
-Full analysis and observations: `docs/game_of_life_path_numbers.md`
 
 ---
 
@@ -759,25 +714,6 @@ periodicity in the triplet sequence.
 ```bash
 python3 analysis/open_problems/rule30_center_triplet.py
 ```
-
-### 2D Automata
-
-| Script                             | Description                                                                                     |
-|------------------------------------|-------------------------------------------------------------------------------------------------|
-| `analysis/2d/gol_path_numbers.py`      | path number analysis for Game of Life, three start conditions (Blinker, Glider, R-pentomino), 30 generations; establishes 511 = 7 × 73 as structural root; confirms full divisibility by 511 |
-| `analysis/2d/gol_rpentomino_primes.py` | systematic prime factor analysis of the R-pentomino over a configurable generation window; tracks the multiplier k in path number = 511 × k; documents stabilization at gen 1103 with terminal value k = 116 = 2² × 29 |
-| `analysis/2d/gol_rule_space.py`        | complete scan of all 2^16 structurally valid outer totalistic 2D rules; classifies single-cell behaviour; identifies 883 non-trivially bounded rules; reduction factor ≈ 74× |
-
-```bash
-python3 analysis/2d/gol_path_numbers.py
-python3 analysis/2d/gol_rpentomino_primes.py
-python3 analysis/2d/gol_rule_space.py
-```
-
-`gol_rpentomino_primes.py` requires `numpy` and `sympy`. The other two 2D
-scripts require `numpy` only. See `requirements.txt`.
-
-Full analysis and observations: `docs/game_of_life_path_numbers.md`
 
 ### `viz/rule30_viz.html`
 
