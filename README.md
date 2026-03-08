@@ -58,12 +58,9 @@ rule30-structure/
 │   └── rule30_interior_classes_abcd.drawio.png      # classes A, B, C, D
 │
 ├── docs/
-│   ├── interior_classes.md                          # full documentation of all four combinative
-│   │                                                # classes, alphabet, layer tables, and
-│   │                                                # comparative overview
-│   └── game_of_life_path_numbers.md                 # path number method applied to 2D automata;
-│                                                    # structural observations, rule space analysis,
-│                                                    # 883 non-trivially bounded rules
+│   └── interior_classes.md                          # full documentation of all four combinative
+│                                                    # classes, alphabet, layer tables, and
+│                                                    # comparative overview
 │
 └── viz/
     ├── rule30_viz.html                              # path number visualization for Rule 30
